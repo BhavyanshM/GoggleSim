@@ -6,7 +6,7 @@ project(flightgoggles_client_bindings)
 ################
 
 # Turn this on to compile ROS bindings.
-set(COMPILE_ROSCLIENT OFF)
+set(COMPILE_ROSCLIENT ON)
 
 ################
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin )

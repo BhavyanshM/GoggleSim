@@ -5,7 +5,11 @@
  *space.
  **/
 
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "GeneralClient.hpp"
+
 
 #define SHOW_DEBUG_IMAGE_FEED true
 
@@ -70,6 +74,14 @@ void GeneralClient::addCameras(){
   flightGoggles.state.cameras.push_back(cam_D);
 }
 
+double px, py, pz = 1.5, roll, pitch, yaw = 0;
+
+// void playerUpdate(){
+//   if (kbhit() != 0) {
+//     cout << getch() << endl;
+//   }
+// }
+
 // Do a simple circular trajectory
 void GeneralClient::updateCameraTrajectory(){
   double period = 15.0f;
@@ -78,14 +90,16 @@ void GeneralClient::updateCameraTrajectory(){
   double theta = -((t/period)*2.0f*M_PI);
   
   Transform3 camera_pose;
-  camera_pose.translation() = Vector3(r*cos(theta), r*sin(theta), 1.5f);
+  camera_pose.translation() = Vector3(px, py, pz);
   // Set rotation matrix using pitch, roll, yaw
-  camera_pose.linear() = Eigen::AngleAxisd(theta-M_PI, Eigen::Vector3d(0,0,1)).toRotationMatrix();
+  camera_pose.linear() = Eigen::AngleAxisd(0, Eigen::Vector3d(roll,pitch,yaw)).toRotationMatrix();
 
   // Populate status message with new pose
   flightGoggles.setCameraPoseUsingROSCoordinates(camera_pose, 0);
   flightGoggles.setCameraPoseUsingROSCoordinates(camera_pose, 1);
 }
+
+
 
 ///////////////////////
 // Example Client Node

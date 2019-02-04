@@ -18,6 +18,7 @@
 #include "std_msgs/String.h"
 #include "nav_msgs/Odometry.h"
 #include "geometry_msgs/Pose.h"
+#include "geometry_msgs/PoseStamped.h"
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
@@ -34,6 +35,7 @@ public:
 	void populateRenderSettings();
 
 	void poseSubscriber(const nav_msgs::Odometry::ConstPtr& msg);
+  void poseStampedSubscriber(const geometry_msgs::PoseStamped::ConstPtr& msg);
 private:
     void poseMsgToEigen(const geometry_msgs::Pose &m, Eigen::Affine3d &e)
     {

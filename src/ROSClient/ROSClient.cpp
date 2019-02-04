@@ -52,6 +52,7 @@ void ROSClient::poseSubscriber(const nav_msgs::Odometry::ConstPtr& msg){
     // Sends render requests to FlightGoggles indefinitely
     geometry_msgs::Pose cam_pose_tf = msg->pose.pose;
 
+
     // Old hack to convert ROS TF to ENU poses.
     // float x = cam_pose_tf.position.x;
     // cam_pose_tf.position.x = -cam_pose_tf.position.y;
@@ -75,6 +76,33 @@ void ROSClient::poseSubscriber(const nav_msgs::Odometry::ConstPtr& msg){
 // Example Client Node
 ///////////////////////
 
+void ROSClient::poseStampedSubscriber(const geometry_msgs::PoseStamped::ConstPtr& msg){
+    // ROS_INFO("%lf\n", msg->pose.position.x);
+
+    geometry_msgs::Pose cam_pose_tf = msg->pose;
+    ROS_INFO("x = %lf\ty = %lf\tz = %lf\n", cam_pose_tf.position.x, cam_pose_tf.position.y, cam_pose_tf.position.z);
+    ROS_INFO("w = %lf\tx = %lf\ty = %lf\tz = %lf\n", cam_pose_tf.orientation.w, cam_pose_tf.orientation.x, cam_pose_tf.orientation.y, cam_pose_tf.orientation.z);
+
+
+    // Old hack to convert ROS TF to ENU poses.
+    // float x = cam_pose_tf.position.x;
+    // cam_pose_tf.position.x = -cam_pose_tf.position.y;
+    // cam_pose_tf.position.y = x;
+
+    Transform3 cam_pose_eigen;
+    poseMsgToEigen(cam_pose_tf, cam_pose_eigen);
+
+    // Populate status message with new pose
+    flightGoggles.setCameraPoseUsingROSCoordinates(cam_pose_eigen, 0);
+    flightGoggles.setCameraPoseUsingROSCoordinates(cam_pose_eigen, 1);
+
+    // Update timestamp of state message (needed to force FlightGoggles to rerender scene)
+    flightGoggles.state.utime = flightGoggles.getTimestamp();
+    // request render
+    flightGoggles.requestRender();
+
+}
+
 int main(int argc, char **argv) {
     ros::init(argc, argv, "pose_listener");
 
@@ -86,8 +114,10 @@ int main(int argc, char **argv) {
     // Load params
     client.populateRenderSettings();
 
-    callback poseCallback = boost::bind(&ROSClient::poseSubscriber, &client, _1);
-    ros::Subscriber sub = node.subscribe("odom", 1, poseCallback);
+    ROS_INFO("THIS WORKS\n");
+
+    // callback poseCallback = boost::bind(&ROSClient::poseSubscriber, &client, _1);
+    ros::Subscriber sub = node.subscribe("/quad_rotor/pose", 10, &ROSClient::poseStampedSubscriber, &client);
 
     // Spin
     ros::spin();
